@@ -1,0 +1,1 @@
+docker run --net=confluent --rm confluentinc/cp-kafka:6.2.0 kafka-topics --alter --topic foo --partitions 2 --zookeeper zookeeper:2181

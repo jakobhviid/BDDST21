@@ -1,0 +1,1 @@
+docker run --net=confluent --rm confluentinc/cp-kafka:6.2.0 kafka-console-consumer --bootstrap-server kafka:9092 --topic foo
