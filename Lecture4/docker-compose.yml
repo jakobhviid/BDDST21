@@ -118,5 +118,3 @@ volumes:
     name: datanode2
   hadoop_datanode3:
     name: datanode3
-  hadoop_historyserver:
-    name: historyserver
