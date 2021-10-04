@@ -1,0 +1,154 @@
+version: "3.5"
+
+services:
+  namenode: #Master (metadata/chunk)
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    restart: always
+    ports:
+      - 9870:9870
+      - 9000:9000
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./hadoop.env
+    networks:
+      cscourse:
+        ipv4_address: 172.202.0.12
+
+  datanode1: #Slave1
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode1
+    restart: always
+    ports:
+      - 9864:9864
+    volumes:
+      - hadoop_datanode1:/hadoop/dfs/data
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    env_file:
+      - ./hadoop.env
+    networks:
+      cscourse:
+        ipv4_address: 172.202.0.13
+
+  datanode2: #Slave2
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode2
+    restart: always
+    ports:
+      - 9865:9864
+    volumes:
+      - hadoop_datanode2:/hadoop/dfs/data
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    env_file:
+      - ./hadoop.env
+    networks:
+      cscourse:
+        ipv4_address: 172.202.0.14
+
+  datanode3: #Slave3
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode3
+    restart: always
+    ports:
+      - 9866:9864
+    volumes:
+      - hadoop_datanode3:/hadoop/dfs/data
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    env_file:
+      - ./hadoop.env
+    networks:
+      cscourse:
+        ipv4_address: 172.202.0.15
+
+  spark-master:
+    image: bde2020/spark-master:3.1.1-hadoop3.2
+    container_name: spark-master
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    environment:
+      - INIT_DAEMON_STEP=setup_spark
+    networks:
+      cscourse:
+        ipv4_address: 172.202.0.9
+  spark-worker-1:
+    image: bde2020/spark-worker:3.1.1-hadoop3.2
+    container_name: spark-worker-1
+    depends_on:
+      - spark-master
+    ports:
+      - "8081:8081"
+    environment:
+      - "SPARK_MASTER=spark://spark-master:7077"
+    networks:
+      cscourse:
+        ipv4_address: 172.202.0.10
+  spark-worker-2:
+    image: bde2020/spark-worker:3.1.1-hadoop3.2
+    container_name: spark-worker-2
+    depends_on:
+      - spark-master
+    ports:
+      - "8082:8082"
+    environment:
+      - "SPARK_MASTER=spark://spark-master:7077"
+    networks:
+      cscourse:
+        ipv4_address: 172.202.0.11
+        
+    
+  zookeeper:
+    image: confluentinc/cp-zookeeper:6.2.0
+    ports:
+      - 2181:2181
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      cscourse:
+  kafka:
+    image: confluentinc/cp-kafka:6.2.0
+    ports:
+      - 9092:9092
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_PARTITION_ASSIGNMENT_STRATEGY: org.apache.kafka.clients.consumer.RoundRobinAssignor
+    volumes:
+      - confluent_kafka:/var/lib/kafka/data
+    networks:
+      cscourse:
+  kowl:
+    image: quay.io/cloudhut/kowl:master
+    ports:
+      - 8088:8080
+    environment:
+      KAFKA_BROKERS: kafka:9092
+    restart: always
+    networks:
+      cscourse:
+
+networks:
+  cscourse:
+    name: hadoop
+    ipam:
+      config:
+        - subnet: 172.202.0.0/24
+
+volumes:
+  hadoop_namenode:
+    name: namenode
+  hadoop_datanode1:
+    name: datanode1
+  hadoop_datanode2:
+    name: datanode2
+  hadoop_datanode3:
+    name: datanode3
+  confluent_kafka:
+    name: kafka
