@@ -1,0 +1,13 @@
+docker exec -ti hbase hbase shell
+
+create 'word_counts', 'cf'
+
+put 'word_counts', 'the', 'cf:count', 1683
+put 'word_counts', 'and', 'cf:count', 783
+put 'word_counts', 'to', 'cf:count', 778
+put 'word_counts', 'a', 'cf:count', 667
+put 'word_counts', 'of', 'cf:count', 605
+
+scan 'word_counts'
+
+get 'word_counts','the'

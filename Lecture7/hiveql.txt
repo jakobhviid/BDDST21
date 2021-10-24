@@ -1,0 +1,36 @@
+docker exec -ti hive-server beeline
+
+!connect jdbc:hive2://localhost:10000
+# Use "hive" for user and password!
+
+SHOW TABLES;
+
+CREATE TABLE lines (line STRING);
+
+LOAD DATA INPATH 'hdfs://namenode:9000/txt/alice.txt' OVERWRITE INTO TABLE lines;
+
+CREATE TABLE word_counts AS
+SELECT word, count(1) AS count FROM
+(SELECT explode(split(line, ' ')) AS word FROM lines) w
+GROUP BY word
+ORDER BY word;
+
+SELECT * FROM word_counts ORDER BY count DESC LIMIT 10;
+
+DROP TABLE word_counts;
+DROP TABLE lines;
+SHOW TABLES;
+
+CREATE EXTERNAL TABLE lines (line string) LOCATION 'hdfs://namenode:9000/txt';
+
+CREATE TABLE word_counts AS
+SELECT word, count(1) AS count FROM
+(SELECT explode(split(line, ' ')) AS word FROM lines) w
+GROUP BY word
+ORDER BY word;
+
+SELECT * FROM word_counts ORDER BY count DESC LIMIT 10;
+
+SELECT COUNT(*) FROM lines;
+
+SELECT INPUT__FILE__NAME FROM lines GROUP BY INPUT__FILE__NAME;

@@ -16,7 +16,7 @@ services:
       - 3888:3888
       - 2181:2181
     environment:
-      SERVICE_PRECONDITION: "namenode:9000"
+      SERVICE_PRECONDITION: "namenode:9870"
     env_file:
       - ./hbase-standalone.env
     networks:
