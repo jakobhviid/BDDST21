@@ -1,13 +1,19 @@
+# <-- is comments
+# Connect to the docker container
 docker exec -ti hbase hbase shell
 
+# Create a new "table"
 create 'word_counts', 'cf'
 
+# Put values into the table!
 put 'word_counts', 'the', 'cf:count', 1683
 put 'word_counts', 'and', 'cf:count', 783
 put 'word_counts', 'to', 'cf:count', 778
 put 'word_counts', 'a', 'cf:count', 667
 put 'word_counts', 'of', 'cf:count', 605
 
+# Show content of table (note: can make use of filters, etc.)
 scan 'word_counts'
 
+# Get a single value
 get 'word_counts','the'

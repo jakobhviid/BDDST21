@@ -1,28 +1,39 @@
+# <-- is comments
+# Connect to the docker container
 docker exec -ti hive-server beeline
 
+# Connect to hive
 !connect jdbc:hive2://localhost:10000
 # Use "hive" for user and password!
 
+# Show tables, none should be present for now, but it verifies the connection
 SHOW TABLES;
 
+# Create a new table
 CREATE TABLE lines (line STRING);
 
+# Load in data from HDFS
 LOAD DATA INPATH 'hdfs://namenode:9000/txt/alice.txt' OVERWRITE INTO TABLE lines;
 
+# Create a new table using a select statement
 CREATE TABLE word_counts AS
 SELECT word, count(1) AS count FROM
 (SELECT explode(split(line, ' ')) AS word FROM lines) w
 GROUP BY word
 ORDER BY word;
 
+# Select top 10 words
 SELECT * FROM word_counts ORDER BY count DESC LIMIT 10;
 
+# Clean up!
 DROP TABLE word_counts;
 DROP TABLE lines;
 SHOW TABLES;
 
+# External table!
 CREATE EXTERNAL TABLE lines (line string) LOCATION 'hdfs://namenode:9000/txt';
 
+# Repeat word count SELECT statement
 CREATE TABLE word_counts AS
 SELECT word, count(1) AS count FROM
 (SELECT explode(split(line, ' ')) AS word FROM lines) w
@@ -31,6 +42,9 @@ ORDER BY word;
 
 SELECT * FROM word_counts ORDER BY count DESC LIMIT 10;
 
+# Add another book to the HDFS txt folder
+# Count should show that both books are in there
 SELECT COUNT(*) FROM lines;
 
+# Select the file names from the external table
 SELECT INPUT__FILE__NAME FROM lines GROUP BY INPUT__FILE__NAME;
